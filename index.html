@@ -1121,6 +1121,12 @@ Example:
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
+        // Global error handler for debugging
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Global error:', msg, 'at line', lineNo);
+            return false;
+        };
+
         // Language translations
         const translations = {
             en: {
@@ -1394,10 +1400,27 @@ Example:
 
         // Save current note
         function saveCurrentNote() {
-            if (!currentNoteId) return;
-            
-            const note = notes.find(n => n.id === currentNoteId);
-            if (note) {
+            try {
+                if (!currentNoteId) {
+                    console.log('No note selected');
+                    return;
+                }
+                
+                const note = notes.find(n => n.id === currentNoteId);
+                if (!note) {
+                    console.log('Note not found');
+                    return;
+                }
+                
+                const titleEl = document.getElementById('noteTitle');
+                const contentEl = document.getElementById('noteContent');
+                const tagsEl = document.getElementById('noteTags');
+                
+                if (!titleEl || !contentEl || !tagsEl) {
+                    console.error('Required elements not found');
+                    return;
+                }
+                
                 // Save to history before updating
                 if (!note.history) note.history = [];
                 note.history.push({
@@ -1408,13 +1431,17 @@ Example:
                 // Keep only last 10 versions
                 if (note.history.length > 10) note.history.shift();
 
-                note.title = document.getElementById('noteTitle').value || 'Untitled Note';
-                note.content = document.getElementById('noteContent').value;
-                note.tags = document.getElementById('noteTags').value;
+                note.title = titleEl.value || 'Untitled Note';
+                note.content = contentEl.value;
+                note.tags = tagsEl.value;
                 note.updatedAt = new Date().toISOString();
+                
                 saveNotes();
                 renderNotesList();
-                showToast('💾 Note saved successfully!');
+                showToast('💾 ' + (currentLanguage === 'it' ? 'Nota salvata con successo!' : 'Note saved successfully!'));
+            } catch (error) {
+                console.error('Save error:', error);
+                showToast('❌ ' + (currentLanguage === 'it' ? 'Errore nel salvataggio' : 'Error saving note'));
             }
         }
 
@@ -1634,9 +1661,21 @@ Example:
 
         // Print note
         function printNote() {
-            if (!currentNoteId) return;
-            saveCurrentNote(); // Save before printing
-            window.print();
+            try {
+                if (!currentNoteId) {
+                    showToast('❌ ' + (currentLanguage === 'it' ? 'Seleziona prima una nota' : 'Please select a note first'));
+                    return;
+                }
+                
+                console.log('Printing note...');
+                saveCurrentNote(); // Save before printing
+                setTimeout(() => {
+                    window.print();
+                }, 100);
+            } catch (error) {
+                console.error('Print error:', error);
+                showToast('❌ ' + (currentLanguage === 'it' ? 'Errore nella stampa' : 'Error printing'));
+            }
         }
 
         // Email note - Show modal to enter email address
@@ -2486,21 +2525,26 @@ Ctrl/Cmd + U .......... Underline
             }
         });
 
-        // Initialize app
-        loadNotes();
-        
-        // Load dark mode preference
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-        
-        // Load language preference
-        const savedLanguage = localStorage.getItem('saadnoteLanguage');
-        if (savedLanguage) {
-            currentLanguage = savedLanguage;
-            document.getElementById('languageSelect').value = savedLanguage;
-        }
-        updateUILanguage();
+        // Initialize app when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotes();
+            
+            // Load dark mode preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+            
+            // Load language preference
+            const savedLanguage = localStorage.getItem('saadnoteLanguage');
+            if (savedLanguage) {
+                currentLanguage = savedLanguage;
+                const langSelect = document.getElementById('languageSelect');
+                if (langSelect) {
+                    langSelect.value = savedLanguage;
+                }
+            }
+            updateUILanguage();
+        });
     </script>
 </body>
 </html>
