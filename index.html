@@ -1003,10 +1003,10 @@
                     <button class="toolbar-btn" onclick="insertDateTime()" id="btnDateTime">🕒 Date/Time</button>
                     <button class="toolbar-btn" onclick="duplicateNote()" id="btnDuplicate">📋 Duplicate</button>
                     <button class="toolbar-btn" onclick="toggleDarkMode()" id="btnDarkMode">🌙 Dark Mode</button>
-                    <button class="toolbar-btn" onclick="formatText('bold')" id="btnBold">🔤 Bold</button>
-                    <button class="toolbar-btn" onclick="formatText('italic')" id="btnItalic">🔤 Italic</button>
-                    <button class="toolbar-btn" onclick="formatText('highlight')" id="btnHighlight">✏️ Highlight</button>
-                    <button class="toolbar-btn" onclick="formatText('underline')" id="btnUnderline">__ Underline</button>
+                    <button class="toolbar-btn" onclick="makeBold()" id="btnBold" title="Ctrl+B">B</button>
+                    <button class="toolbar-btn" onclick="makeItalic()" id="btnItalic" title="Ctrl+I"><i>I</i></button>
+                    <button class="toolbar-btn" onclick="makeHighlight()" id="btnHighlight" title="Highlight" style="background: #ffeb3b; color: #000;">H</button>
+                    <button class="toolbar-btn" onclick="makeUnderline()" id="btnUnderline" title="Ctrl+U"><u>U</u></button>
                     <button class="toolbar-btn" onclick="improveWithAI()" id="btnAiImprove" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold;">✨ AI Improve</button>
                 </div>
 
@@ -1026,8 +1026,6 @@ Example:
                     <div class="footer-buttons">
                         <button class="btn btn-success" onclick="saveCurrentNote()" id="btnSave">💾 Save</button>
                         <button class="btn btn-warning" onclick="addReminder()" id="btnReminder">⏰ Reminder</button>
-                        <button class="btn btn-info" onclick="textToSpeech()" id="btnRead">🔊 Read</button>
-                        <button class="btn btn-info" onclick="translateNote()" id="btnTranslate">🌍 Translate</button>
                         <button class="btn btn-secondary" onclick="lockNote()" id="btnLock">🔒 Lock</button>
                         <button class="btn btn-secondary" onclick="viewHistory()" id="btnHistory">📜 History</button>
                         <button class="btn btn-secondary" onclick="addImage()" id="btnImage">🖼️ Image</button>
@@ -1055,6 +1053,27 @@ Example:
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
                 <button class="btn btn-success" onclick="confirmPassword()">🔒 Lock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div class="modal" id="emailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="emailModalTitle">📧 Send via Email</h2>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; color: #6c757d;" id="emailModalDesc">Enter email address to send this note:</p>
+                <input type="email" id="emailAddressInput" placeholder="example@email.com" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer;">
+                    <input type="checkbox" id="useGmailCheckbox" checked style="width: 18px; height: 18px; cursor: pointer;">
+                    <span id="useGmailLabel">Use Gmail to send</span>
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEmailModal()">Cancel</button>
+                <button class="btn btn-success" onclick="sendEmail()">📧 Send</button>
             </div>
         </div>
     </div>
@@ -1092,9 +1111,6 @@ Example:
     <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
 
-    <!-- Voice Input Button -->
-    <button class="voice-button" onclick="startVoiceInput()" title="Voice Input (Ctrl+Shift+V)">🎤</button>
-
     <!-- Shortcuts Help -->
     <div class="shortcuts-help" onclick="showShortcuts()">⌨️ Shortcuts</div>
 
@@ -1128,8 +1144,6 @@ Example:
                 tagsPlaceholder: "Tags (e.g., recipe, cream, atritor)",
                 save: "💾 Save",
                 reminder: "⏰ Reminder",
-                read: "🔊 Read",
-                translate: "🌍 Translate",
                 lock: "🔒 Lock",
                 history: "📜 History",
                 image: "🖼️ Image",
@@ -1143,10 +1157,10 @@ Example:
                 dateTime: "🕒 Date/Time",
                 duplicate: "📋 Duplicate",
                 darkMode: "🌙 Dark Mode",
-                bold: "🔤 Bold",
-                italic: "🔤 Italic",
-                highlight: "✏️ Highlight",
-                underline: "__ Underline",
+                bold: "B",
+                italic: "I",
+                highlight: "H",
+                underline: "U",
                 aiImprove: "✨ AI Improve",
                 words: "words",
                 chars: "chars",
@@ -1174,8 +1188,6 @@ Example:
                 tagsPlaceholder: "Tag (es., ricetta, crema, atritor)",
                 save: "💾 Salva",
                 reminder: "⏰ Promemoria",
-                read: "🔊 Leggi",
-                translate: "🌍 Traduci",
                 lock: "🔒 Blocca",
                 history: "📜 Cronologia",
                 image: "🖼️ Immagine",
@@ -1189,10 +1201,10 @@ Example:
                 dateTime: "🕒 Data/Ora",
                 duplicate: "📋 Duplica",
                 darkMode: "🌙 Modalità Scura",
-                bold: "🔤 Grassetto",
-                italic: "🔤 Corsivo",
-                highlight: "✏️ Evidenzia",
-                underline: "__ Sottolinea",
+                bold: "G",
+                italic: "C",
+                highlight: "E",
+                underline: "S",
                 aiImprove: "✨ Migliora con IA",
                 words: "parole",
                 chars: "caratteri",
@@ -1259,8 +1271,6 @@ Example:
             const footerButtons = {
                 'btnSave': t.save,
                 'btnReminder': t.reminder,
-                'btnRead': t.read,
-                'btnTranslate': t.translate,
                 'btnLock': t.lock,
                 'btnHistory': t.history,
                 'btnImage': t.image,
@@ -1629,19 +1639,67 @@ Example:
             window.print();
         }
 
-        // Email note
+        // Email note - Show modal to enter email address
         function emailNote() {
-            if (!currentNoteId) return;
+            if (!currentNoteId) {
+                showToast(currentLanguage === 'it' ? '❌ Seleziona prima una nota' : '❌ Please select a note first');
+                return;
+            }
             
             const note = notes.find(n => n.id === currentNoteId);
+            if (!note) return;
+            
+            // Update modal language
+            document.getElementById('emailModalTitle').textContent = currentLanguage === 'it' ? '📧 Invia via Email' : '📧 Send via Email';
+            document.getElementById('emailModalDesc').textContent = currentLanguage === 'it' ? 
+                'Inserisci indirizzo email per inviare questa nota:' : 
+                'Enter email address to send this note:';
+            document.getElementById('emailAddressInput').placeholder = 'example@email.com';
+            document.getElementById('useGmailLabel').textContent = currentLanguage === 'it' ? 'Usa Gmail per inviare' : 'Use Gmail to send';
+            
+            // Show modal
+            document.getElementById('emailModal').classList.add('active');
+        }
+
+        function closeEmailModal() {
+            document.getElementById('emailModal').classList.remove('active');
+        }
+
+        function sendEmail() {
+            const emailAddress = document.getElementById('emailAddressInput').value.trim();
+            const useGmail = document.getElementById('useGmailCheckbox').checked;
+            
+            if (!emailAddress) {
+                showToast(currentLanguage === 'it' ? '❌ Inserisci un indirizzo email' : '❌ Please enter an email address');
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailAddress)) {
+                showToast(currentLanguage === 'it' ? '❌ Indirizzo email non valido' : '❌ Invalid email address');
+                return;
+            }
+            
+            const note = notes.find(n => n.id === currentNoteId);
+            if (!note) return;
+            
             const subject = encodeURIComponent(note.title);
-            const body = encodeURIComponent(`${note.content}\n\n---\nCreated: ${new Date(note.createdAt).toLocaleString()}\nTags: ${note.tags || 'None'}`);
+            const body = encodeURIComponent(`${note.content}\n\n---\n${currentLanguage === 'it' ? 'Creato' : 'Created'}: ${new Date(note.createdAt).toLocaleString()}\nTag: ${note.tags || (currentLanguage === 'it' ? 'Nessuno' : 'None')}`);
             
-            const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`;
+            if (useGmail) {
+                // Open Gmail with recipient
+                const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailAddress)}&su=${subject}&body=${body}`;
+                window.open(gmailLink, '_blank');
+                showToast(currentLanguage === 'it' ? '📧 Apertura Gmail...' : '📧 Opening Gmail...');
+            } else {
+                // Use mailto (default email client)
+                const mailtoLink = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+                window.location.href = mailtoLink;
+                showToast(currentLanguage === 'it' ? '📧 Apertura client email...' : '📧 Opening email client...');
+            }
             
-            // Open directly in new tab
-            window.open(gmailLink, '_blank');
-            showToast('📧 Opening Gmail...');
+            closeEmailModal();
         }
 
         // Add templates
@@ -1807,6 +1865,86 @@ Time: ${new Date().toLocaleTimeString()}
             showToast(`✏️ Text formatted as ${type}`);
         }
 
+        // Simple Bold - Makes selected text UPPERCASE
+        function makeBold() {
+            const textarea = document.getElementById('noteContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            if (!selectedText) {
+                showToast(currentLanguage === 'it' ? '⚠️ Seleziona prima il testo' : '⚠️ Select text first');
+                return;
+            }
+            
+            const boldText = selectedText.toUpperCase();
+            textarea.value = textarea.value.substring(0, start) + boldText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start, start + boldText.length);
+            updateWordCount();
+            showToast(currentLanguage === 'it' ? '✅ Testo in grassetto (MAIUSCOLO)' : '✅ Text made bold (UPPERCASE)');
+        }
+
+        // Simple Italic - Adds --- before text
+        function makeItalic() {
+            const textarea = document.getElementById('noteContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            if (!selectedText) {
+                showToast(currentLanguage === 'it' ? '⚠️ Seleziona prima il testo' : '⚠️ Select text first');
+                return;
+            }
+            
+            const italicText = `--- ${selectedText}`;
+            textarea.value = textarea.value.substring(0, start) + italicText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start, start + italicText.length);
+            updateWordCount();
+            showToast(currentLanguage === 'it' ? '✅ Testo in corsivo (---)' : '✅ Text made italic (---)');
+        }
+
+        // Simple Highlight - Adds *** around text
+        function makeHighlight() {
+            const textarea = document.getElementById('noteContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            if (!selectedText) {
+                showToast(currentLanguage === 'it' ? '⚠️ Seleziona prima il testo' : '⚠️ Select text first');
+                return;
+            }
+            
+            const highlightText = `*** ${selectedText} ***`;
+            textarea.value = textarea.value.substring(0, start) + highlightText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start, start + highlightText.length);
+            updateWordCount();
+            showToast(currentLanguage === 'it' ? '✅ Testo evidenziato (***)' : '✅ Text highlighted (***)');
+        }
+
+        // Simple Underline - Adds ___ before text
+        function makeUnderline() {
+            const textarea = document.getElementById('noteContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            if (!selectedText) {
+                showToast(currentLanguage === 'it' ? '⚠️ Seleziona prima il testo' : '⚠️ Select text first');
+                return;
+            }
+            
+            const underlineText = `___ ${selectedText}`;
+            textarea.value = textarea.value.substring(0, start) + underlineText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start, start + underlineText.length);
+            updateWordCount();
+            showToast(currentLanguage === 'it' ? '✅ Testo sottolineato (___)' : '✅ Text underlined (___)');
+        }
+
         // Clear search
         function clearSearch() {
             document.getElementById('searchInput').value = '';
@@ -1896,64 +2034,15 @@ Please provide ONLY the improved text without any explanations or meta-commentar
         // Add reminder
         function addReminder() {
             const content = document.getElementById('noteContent');
-            const reminder = prompt('Set a reminder (e.g., "Follow up tomorrow", "Check in 3 days"):');
+            const reminder = prompt(currentLanguage === 'it' ? 
+                'Imposta promemoria (es., "Controllare domani", "Verificare tra 3 giorni"):' :
+                'Set a reminder (e.g., "Follow up tomorrow", "Check in 3 days"):');
             if (reminder) {
-                const reminderText = `\n\n⏰ REMINDER: ${reminder}\nSet on: ${new Date().toLocaleString()}\n`;
+                const reminderText = `\n\n⏰ ${currentLanguage === 'it' ? 'PROMEMORIA' : 'REMINDER'}: ${reminder}\n${currentLanguage === 'it' ? 'Impostato il' : 'Set on'}: ${new Date().toLocaleString()}\n`;
                 content.value += reminderText;
                 updateWordCount();
-                showToast('⏰ Reminder added!');
+                showToast(currentLanguage === 'it' ? '⏰ Promemoria aggiunto!' : '⏰ Reminder added!');
             }
-        }
-
-        // Text to speech
-        function textToSpeech() {
-            if (!currentNoteId) {
-                showToast('❌ Please select a note first');
-                return;
-            }
-
-            const content = document.getElementById('noteContent').value;
-            if (!content) {
-                showToast('❌ Note is empty');
-                return;
-            }
-
-            if ('speechSynthesis' in window) {
-                // Stop any ongoing speech
-                window.speechSynthesis.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance(content);
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                utterance.volume = 1;
-                
-                utterance.onstart = () => showToast('🔊 Reading note...');
-                utterance.onend = () => showToast('✅ Finished reading');
-                utterance.onerror = () => showToast('❌ Error reading note');
-                
-                window.speechSynthesis.speak(utterance);
-            } else {
-                showToast('❌ Text-to-speech not supported in your browser');
-            }
-        }
-
-        // Translate note (opens Google Translate)
-        function translateNote() {
-            if (!currentNoteId) {
-                showToast('❌ Please select a note first');
-                return;
-            }
-
-            const content = document.getElementById('noteContent').value;
-            if (!content) {
-                showToast('❌ Note is empty');
-                return;
-            }
-
-            const encodedText = encodeURIComponent(content);
-            const translateUrl = `https://translate.google.com/?sl=auto&tl=en&text=${encodedText}&op=translate`;
-            window.open(translateUrl, '_blank');
-            showToast('🌍 Opening Google Translate...');
         }
 
         // Sort notes
@@ -2000,61 +2089,25 @@ Please provide ONLY the improved text without any explanations or meta-commentar
             showToast('☁️ Backup created with timestamp!');
         }
 
-        // Voice input (Speech Recognition)
-        function startVoiceInput() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                showToast('❌ Voice input not supported in your browser');
-                return;
-            }
-
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-
-            const content = document.getElementById('noteContent');
-            let finalTranscript = '';
-
-            recognition.onstart = () => {
-                showToast('🎤 Listening... Speak now!');
-            };
-
-            recognition.onresult = (event) => {
-                let interimTranscript = '';
-                
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        finalTranscript += transcript + ' ';
-                    } else {
-                        interimTranscript += transcript;
-                    }
-                }
-                
-                content.value = finalTranscript + interimTranscript;
-                updateWordCount();
-            };
-
-            recognition.onerror = (event) => {
-                showToast('❌ Voice recognition error');
-                recognition.stop();
-            };
-
-            recognition.onend = () => {
-                showToast('🎤 Voice input stopped');
-            };
-
-            recognition.start();
-            
-            // Stop after 30 seconds
-            setTimeout(() => recognition.stop(), 30000);
-        }
-
         // Show keyboard shortcuts
         function showShortcuts() {
-            const shortcuts = `
+            const shortcuts = currentLanguage === 'it' ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⌨️  SCORCIATOIE TASTIERA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ctrl/Cmd + S .......... Salva nota
+Ctrl/Cmd + N .......... Nuova nota
+Ctrl/Cmd + P .......... Stampa nota
+Ctrl/Cmd + F .......... Cerca note
+Ctrl/Cmd + D .......... Duplica nota
+Ctrl/Cmd + K .......... Modalità scura
+Ctrl/Cmd + B .......... Grassetto
+Ctrl/Cmd + I .......... Corsivo
+Ctrl/Cmd + U .......... Sottolinea
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            ` : `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⌨️  KEYBOARD SHORTCUTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2065,7 +2118,9 @@ Ctrl/Cmd + P .......... Print note
 Ctrl/Cmd + F .......... Search notes
 Ctrl/Cmd + D .......... Duplicate note
 Ctrl/Cmd + K .......... Toggle dark mode
-Ctrl/Cmd + Shift + V .. Voice input
+Ctrl/Cmd + B .......... Bold
+Ctrl/Cmd + I .......... Italic
+Ctrl/Cmd + U .......... Underline
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
             `;
@@ -2419,10 +2474,20 @@ Ctrl/Cmd + Shift + V .. Voice input
                 e.preventDefault();
                 toggleDarkMode();
             }
-            // Ctrl/Cmd + Shift + V for voice input
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'V') {
+            // Ctrl/Cmd + B for Bold
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
                 e.preventDefault();
-                startVoiceInput();
+                makeBold();
+            }
+            // Ctrl/Cmd + I for Italic
+            if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+                e.preventDefault();
+                makeItalic();
+            }
+            // Ctrl/Cmd + U for Underline
+            if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+                e.preventDefault();
+                makeUnderline();
             }
         });
 
