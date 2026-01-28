@@ -1952,8 +1952,8 @@ Time: ${new Date().toLocaleTimeString()}
             renderNotesList();
         }
 
-        // AI Improve text - Corrects grammar and rewrites professionally
-        async function improveWithAI() {
+        // AI Improve text - Simple text cleanup and organization
+        function improveWithAI() {
             if (!currentNoteId) {
                 showToast('❌ ' + (currentLanguage === 'it' ? 'Seleziona prima una nota' : 'Please select a note first'));
                 return;
@@ -1965,70 +1965,65 @@ Time: ${new Date().toLocaleTimeString()}
                 return;
             }
 
-            const title = document.getElementById('noteTitle').value;
-
             // Show loading
             const originalBtn = document.getElementById('btnAiImprove');
+            if (!originalBtn) return;
+            
             const originalText = originalBtn.textContent;
             originalBtn.textContent = currentLanguage === 'it' ? '⏳ Miglioramento...' : '⏳ Improving...';
             originalBtn.disabled = true;
 
-            try {
-                const targetLang = currentLanguage === 'it' ? 'Italian' : 'English';
-                
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        model: 'claude-sonnet-4-20250514',
-                        max_tokens: 1000,
-                        messages: [{
-                            role: 'user',
-                            content: `You are a professional text editor. Please improve this text by:
-1. Correcting all grammar and spelling errors
-2. Rewriting it in a clear, professional, and well-organized manner
-3. Maintaining the original meaning and key information
-4. Organizing it with proper structure (sections, bullet points if needed)
-5. Write the output in ${targetLang}
+            // Simulate processing delay
+            setTimeout(() => {
+                try {
+                    // Simple text improvements:
+                    let improved = content;
 
-Title: ${title}
+                    // 1. Fix double spaces
+                    improved = improved.replace(/  +/g, ' ');
 
-Text to improve:
-${content}
+                    // 2. Fix line breaks (max 2 consecutive)
+                    improved = improved.replace(/\n\n\n+/g, '\n\n');
 
-Please provide ONLY the improved text without any explanations or meta-commentary.`
-                        }]
-                    })
-                });
+                    // 3. Capitalize first letter of sentences
+                    improved = improved.replace(/(^|[.!?]\s+)([a-z])/g, function(match, p1, p2) {
+                        return p1 + p2.toUpperCase();
+                    });
 
-                if (!response.ok) {
-                    throw new Error('API request failed');
+                    // 4. Add proper spacing after punctuation
+                    improved = improved.replace(/([.!?,])([A-Za-z])/g, '$1 $2');
+
+                    // 5. Trim spaces around lines
+                    improved = improved.split('\n').map(line => line.trim()).join('\n');
+
+                    // 6. Organize bullet points
+                    improved = improved.replace(/^[*-]\s*/gm, '• ');
+
+                    // 7. Remove trailing spaces
+                    improved = improved.replace(/\s+$/gm, '');
+
+                    // Update the note content
+                    document.getElementById('noteContent').value = improved;
+                    updateWordCount();
+                    
+                    showToast('✨ ' + (currentLanguage === 'it' ? 'Testo migliorato!' : 'Text improved!'));
+                    
+                    // Auto-save the improved version
+                    setTimeout(() => saveCurrentNote(), 500);
+
+                } catch (error) {
+                    console.error('Improve error:', error);
+                    showToast('❌ ' + (currentLanguage === 'it' ? 
+                        'Errore nel miglioramento' : 
+                        'Error improving text'));
+                } finally {
+                    // Restore button
+                    if (originalBtn) {
+                        originalBtn.textContent = originalText;
+                        originalBtn.disabled = false;
+                    }
                 }
-
-                const data = await response.json();
-                const improvedText = data.content[0].text;
-
-                // Update the note content
-                document.getElementById('noteContent').value = improvedText;
-                updateWordCount();
-                
-                showToast('✨ ' + (currentLanguage === 'it' ? 'Testo migliorato con successo!' : 'Text improved successfully!'));
-                
-                // Auto-save the improved version
-                setTimeout(() => saveCurrentNote(), 500);
-
-            } catch (error) {
-                console.error('AI Improve error:', error);
-                showToast('❌ ' + (currentLanguage === 'it' ? 
-                    'Errore nel miglioramento. Riprova più tardi.' : 
-                    'Error improving text. Please try again later.'));
-            } finally {
-                // Restore button
-                originalBtn.textContent = originalText;
-                originalBtn.disabled = false;
-            }
+            }, 1000); // 1 second simulated delay
         }
 
         // Add reminder
